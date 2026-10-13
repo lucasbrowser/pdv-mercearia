@@ -25,6 +25,8 @@ public class MainView extends JFrame {
         grade.add(card("Produtos", Permissao.GERENCIAR_PRODUTOS, () -> new ProdutoView(this).setVisible(true)));
         grade.add(card("Estoque", Permissao.GERENCIAR_ESTOQUE, () -> new EstoqueView(this).setVisible(true)));
         grade.add(card("Vendas", Permissao.CONSULTAR_VENDAS, () -> new VendasView(this).setVisible(true)));
+        grade.add(card("Caixa (abertura / sangria / fechamento)", Permissao.GERENCIAR_CAIXA, () -> new CaixaView(this).setVisible(true)));
+        grade.add(card("Relatórios", Permissao.VER_RELATORIOS, () -> new RelatorioView(this).setVisible(true)));
         grade.add(card("Usuários", Permissao.GERENCIAR_USUARIOS, () -> new UsuarioView(this).setVisible(true)));
         JButton sair = Ui.botao("Trocar usuário / Sair", this::trocarUsuario);
         sair.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
@@ -32,7 +34,7 @@ public class MainView extends JFrame {
 
         add(boasVindas, BorderLayout.NORTH);
         add(grade, BorderLayout.CENTER);
-        setSize(720, 360);
+        setSize(900, 420);
         setLocationRelativeTo(null);
     }
 
@@ -45,6 +47,7 @@ public class MainView extends JFrame {
     }
 
     private void abrirPdv() {
+        if (!CaixaView.garantirCaixaAberto(this)) return;
         setVisible(false);
         new PdvView(() -> setVisible(true)).setVisible(true);
     }

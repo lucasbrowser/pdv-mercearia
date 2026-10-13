@@ -2,21 +2,23 @@ package com.pdv.view;
 
 import com.pdv.controller.VendaController;
 import com.pdv.model.Produto;
+import com.pdv.util.Fmt;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 
-/** Pesquisa de produto por nome/código no PDV (F2). */
+/** Pesquisa de produto por nome/código no PDV (F2). Para KG/LT informe o peso (ex.: 0,350). */
 public class PesquisaProdutoDialog extends JDialog {
-    public record Escolha(Produto produto, int quantidade) { }
+    public record Escolha(Produto produto, BigDecimal quantidade) { }
 
     private final VendaController ctrl;
     private final ProdutoTableModel modelo = new ProdutoTableModel();
     private final JTable tabela = Ui.tabela(modelo);
     private final JTextField busca = new JTextField();
-    private final JSpinner qtd = new JSpinner(new SpinnerNumberModel(1, 1, 9999, 1));
+    private final JTextField qtd = new JTextField("1", 7);
     private Escolha escolha;
 
     public static Escolha escolher(Window pai, VendaController ctrl, String inicial) {
@@ -35,16 +37,17 @@ public class PesquisaProdutoDialog extends JDialog {
         busca.setText(inicial);
 
         Ui.aoDigitar(busca, this::carregar);
-        busca.addActionListener(e -> confirmar());
+        busca.addActionListener(e -> confirmarSeguro());
+        qtd.addActionListener(e -> confirmarSeguro());
         tabela.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) { if (e.getClickCount() == 2) confirmar(); }
+            @Override public void mouseClicked(MouseEvent e) { if (e.getClickCount() == 2) confirmarSeguro(); }
         });
         Ui.atalho(getRootPane(), "ESCAPE", this::dispose);
         Ui.atalho(getRootPane(), "DOWN", () -> mover(1));
         Ui.atalho(getRootPane(), "UP", () -> mover(-1));
 
         JPanel rodape = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        rodape.add(new JLabel("Quantidade:"));
+        rodape.add(new JLabel("Quantidade / peso:"));
         rodape.add(qtd);
         rodape.add(Ui.botao("Adicionar (Enter)", this::confirmar));
         rodape.add(Ui.botao("Cancelar (Esc)", this::dispose));
@@ -55,7 +58,7 @@ public class PesquisaProdutoDialog extends JDialog {
         raiz.add(new JScrollPane(tabela), BorderLayout.CENTER);
         raiz.add(rodape, BorderLayout.SOUTH);
         setContentPane(raiz);
-        setSize(860, 520);
+        setSize(900, 520);
         setLocationRelativeTo(pai);
         carregar();
         SwingUtilities.invokeLater(busca::requestFocusInWindow);
@@ -74,11 +77,17 @@ public class PesquisaProdutoDialog extends JDialog {
         tabela.scrollRectToVisible(tabela.getCellRect(i, 0, true));
     }
 
+    private void confirmarSeguro() {
+        try { confirmar(); } catch (Exception ex) { Ui.erro(this, ex); }
+    }
+
     private void confirmar() {
         int r = tabela.getSelectedRow();
         if (r < 0 && modelo.getRowCount() > 0) r = 0;
         if (r < 0) return;
-        escolha = new Escolha(modelo.get(r), (Integer) qtd.getValue());
+        Produto p = modelo.get(r);
+        BigDecimal q = Fmt.quantidade(qtd.getText(), "quantidade", p.fracionado());
+        escolha = new Escolha(p, q);
         dispose();
     }
 }

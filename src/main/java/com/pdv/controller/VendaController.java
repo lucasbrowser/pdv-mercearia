@@ -1,8 +1,10 @@
 package com.pdv.controller;
 
+import com.pdv.dao.CaixaDAO;
 import com.pdv.dao.ProdutoDAO;
 import com.pdv.dao.VendaDAO;
 import com.pdv.model.*;
+import com.pdv.util.Config;
 import com.pdv.util.Fmt;
 import com.pdv.util.NegocioException;
 import com.pdv.util.Sessao;
@@ -11,41 +13,67 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /** Controla a venda em andamento no PDV (carrinho) e a finalização. */
 public class VendaController {
     private final ProdutoDAO produtoDAO = new ProdutoDAO();
     private final VendaDAO vendaDAO = new VendaDAO();
+    private final CaixaDAO caixaDAO = new CaixaDAO();
     private Venda venda = new Venda();
 
     public Venda getVenda() { return venda; }
 
-    /** Aceita "7891000100103" ou "3*7891000100103" (quantidade*código). */
+    public Optional<Caixa> caixaAberto() { return caixaDAO.buscarAberto(); }
+
+    /**
+     * Aceita: "7891000100103", "3*7891000100103", "0,350*codigo" (peso) e etiqueta de balança EAN-13
+     * (2 CCCC PPPPP D, peso em gramas). Produto por peso sem quantidade lança PesoObrigatorioException.
+     */
     public ItemVenda adicionarPorCodigo(String entrada) {
-        int qtd = 1;
+        BigDecimal qtd = null;
         String cod = entrada.trim();
         int pos = cod.indexOf('*');
         if (pos > 0) {
-            qtd = Fmt.inteiro(cod.substring(0, pos), "quantidade");
+            qtd = Fmt.quantidade(cod.substring(0, pos), "quantidade", true);
             cod = cod.substring(pos + 1).trim();
         }
         final String codigo = cod;
-        Produto p = produtoDAO.porCodigo(codigo)
-                .orElseThrow(() -> new NegocioException("Produto não cadastrado: " + codigo));
+        Optional<Produto> exato = produtoDAO.porCodigo(codigo);
+        if (exato.isEmpty() && qtd == null && ehEtiquetaBalanca(codigo)) {
+            String item = codigo.substring(1, 5);
+            BigDecimal peso = BigDecimal.valueOf(Long.parseLong(codigo.substring(5, 10)), 3);
+            Produto p = produtoDAO.porCodigo(item)
+                    .orElseThrow(() -> new NegocioException("Produto de balança não cadastrado (código " + item + ")."));
+            return adicionar(p, peso);
+        }
+        Produto p = exato.orElseThrow(() -> new NegocioException("Produto não cadastrado: " + codigo));
+        if (qtd == null) {
+            if (p.fracionado()) throw new PesoObrigatorioException(p);
+            qtd = BigDecimal.ONE;
+        }
         return adicionar(p, qtd);
     }
 
-    public ItemVenda adicionar(Produto escolhido, int qtd) {
+    private boolean ehEtiquetaBalanca(String cod) {
+        String prefixo = Config.get("balanca.prefixo").trim();
+        return Config.getBool("balanca.etiqueta") && !prefixo.isEmpty() && cod.length() == 13
+                && cod.startsWith(prefixo) && cod.chars().allMatch(Character::isDigit);
+    }
+
+    public ItemVenda adicionar(Produto escolhido, BigDecimal qtd) {
         Sessao.exigir(Permissao.VENDER);
-        if (qtd <= 0) throw new NegocioException("Quantidade inválida.");
+        if (qtd.signum() <= 0) throw new NegocioException("Quantidade inválida.");
         Produto p = produtoDAO.porId(escolhido.id()).orElseThrow(() -> new NegocioException("Produto não encontrado."));
         if (!p.ativo()) throw new NegocioException("Produto inativo: " + p.descricao());
+        if (!p.fracionado() && qtd.stripTrailingZeros().scale() > 0)
+            throw new NegocioException(p.descricao() + " é vendido por unidade (quantidade inteira).");
         ItemVenda item = venda.getItens().stream().filter(i -> i.getProdutoId() == p.id()).findFirst().orElse(null);
-        int total = (item == null ? 0 : item.getQuantidade()) + qtd;
-        if (total > p.estoque())
-            throw new NegocioException("Estoque insuficiente para " + p.descricao() + ". Disponível: " + p.estoque());
+        BigDecimal total = (item == null ? BigDecimal.ZERO : item.getQuantidade()).add(qtd);
+        if (total.compareTo(p.estoque()) > 0)
+            throw new NegocioException("Estoque insuficiente para " + p.descricao() + ". Disponível: " + Fmt.qtd(p.estoque()) + " " + p.unidade());
         if (item == null) {
-            item = new ItemVenda(p.id(), p.codigoBarras(), p.descricao(), qtd, p.preco());
+            item = new ItemVenda(p.id(), p.codigoBarras(), p.descricao(), p.unidade(), qtd, p.preco());
             venda.getItens().add(item);
         } else {
             item.setQuantidade(total);
@@ -53,11 +81,12 @@ public class VendaController {
         return item;
     }
 
-    public void alterarQuantidade(int indice, int qtd) {
+    public void alterarQuantidade(int indice, BigDecimal qtd) {
         ItemVenda item = venda.getItens().get(indice);
-        if (qtd <= 0) { removerItem(indice); return; }
+        if (qtd.signum() <= 0) { removerItem(indice); return; }
         Produto p = produtoDAO.porId(item.getProdutoId()).orElseThrow(() -> new NegocioException("Produto não encontrado."));
-        if (qtd > p.estoque()) throw new NegocioException("Estoque insuficiente. Disponível: " + p.estoque());
+        if (qtd.compareTo(p.estoque()) > 0)
+            throw new NegocioException("Estoque insuficiente. Disponível: " + Fmt.qtd(p.estoque()) + " " + p.unidade());
         item.setQuantidade(qtd);
         ajustarDesconto();
     }
@@ -84,12 +113,15 @@ public class VendaController {
     public Venda finalizar(String forma, String recebido) {
         Sessao.exigir(Permissao.VENDER);
         if (venda.getItens().isEmpty()) throw new NegocioException("Nenhum item na venda.");
+        Caixa caixa = caixaDAO.buscarAberto().orElseThrow(() -> new NegocioException("Caixa fechado. Abra o caixa antes de vender."));
         BigDecimal total = venda.getTotal();
-        BigDecimal valor = "Dinheiro".equals(forma) && recebido != null && !recebido.isBlank() ? Fmt.parse(recebido) : total;
+        BigDecimal valor = FormaPagamento.DINHEIRO.equals(forma) && recebido != null && !recebido.isBlank()
+                ? Fmt.parse(recebido) : total;
         if (valor.compareTo(total) < 0) throw new NegocioException("Valor recebido menor que o total da venda.");
         Usuario u = Sessao.atual();
         venda.setUsuarioId(u.id());
         venda.setUsuarioNome(u.nome());
+        venda.setCaixaId(caixa.id());
         venda.setFormaPagamento(forma);
         venda.setValorRecebido(valor);
         venda.setDataHora(LocalDateTime.now());

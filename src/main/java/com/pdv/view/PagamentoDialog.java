@@ -1,5 +1,6 @@
 package com.pdv.view;
 
+import com.pdv.model.FormaPagamento;
 import com.pdv.util.Fmt;
 
 import javax.swing.*;
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
 /** Retorna {forma, valorRecebido} ou null se cancelado. */
 public class PagamentoDialog extends JDialog {
     private final BigDecimal total;
-    private final JComboBox<String> forma = new JComboBox<>(new String[]{"Dinheiro", "Cartão de Débito", "Cartão de Crédito", "PIX"});
+    private final JComboBox<String> forma = new JComboBox<>(FormaPagamento.TODAS.toArray(new String[0]));
     private final JTextField recebido = new JTextField();
     private final JLabel troco = new JLabel("R$ 0,00");
     private String[] resultado;

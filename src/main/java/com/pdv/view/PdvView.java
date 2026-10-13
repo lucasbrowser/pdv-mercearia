@@ -1,7 +1,10 @@
 package com.pdv.view;
 
+import com.pdv.controller.PesoObrigatorioException;
 import com.pdv.controller.VendaController;
 import com.pdv.model.ItemVenda;
+import com.pdv.model.Produto;
+import com.pdv.model.TipoMovCaixa;
 import com.pdv.model.Venda;
 import com.pdv.util.Config;
 import com.pdv.util.Fmt;
@@ -80,7 +83,8 @@ public class PdvView extends JFrame {
         nome.setForeground(Color.WHITE);
         lblStatus.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22));
         lblStatus.setForeground(VERDE);
-        JLabel oper = new JLabel("Operador: " + Sessao.atual().nome() + "   |");
+        JLabel oper = new JLabel("Caixa #" + ctrl.caixaAberto().map(c -> String.valueOf(c.id())).orElse("-")
+                + "   |   Operador: " + Sessao.atual().nome() + "   |");
         JLabel relogio = new JLabel(" ");
         oper.setForeground(CINZA);
         relogio.setForeground(CINZA);
@@ -108,7 +112,7 @@ public class PdvView extends JFrame {
         tabela.setFocusable(false); // mantém o foco no campo do leitor
         DefaultTableCellRenderer direita = new DefaultTableCellRenderer();
         direita.setHorizontalAlignment(SwingConstants.RIGHT);
-        int[] larguras = {45, 150, 420, 70, 110, 120};
+        int[] larguras = {45, 150, 400, 100, 110, 120};
         for (int c = 0; c < larguras.length; c++) {
             tabela.getColumnModel().getColumn(c).setPreferredWidth(larguras[c]);
             if (c >= 3) tabela.getColumnModel().getColumn(c).setCellRenderer(direita);
@@ -142,9 +146,9 @@ public class PdvView extends JFrame {
         lblMsg.setForeground(new Color(0xC62828));
         campo.setFont(new Font(Font.MONOSPACED, Font.BOLD, 30));
         campo.setBorder(BorderFactory.createTitledBorder(
-                "Código de barras ou descrição  (Enter adiciona  •  3*código = 3 unidades)"));
+                "Código de barras ou descrição  (Enter adiciona  •  3*código = 3 un.  •  0,350*código = peso)"));
         JLabel atalhos = new JLabel("F2 Pesquisar   F3 Alterar qtd   F4 Remover item   F5 Desconto   "
-                + "F8 Cancelar venda   F10 Finalizar   ↑↓ Selecionar item   Esc Sair");
+                + "F6 Sangria   F8 Cancelar venda   F10 Finalizar   ↑↓ Selecionar item   Esc Sair");
         atalhos.setForeground(Color.DARK_GRAY);
         JPanel baixo = new JPanel(new BorderLayout(0, 4));
         baixo.setBorder(BorderFactory.createEmptyBorder(6, 12, 8, 12));
@@ -166,6 +170,7 @@ public class PdvView extends JFrame {
         Ui.atalho(r, "F3", () -> executar(this::alterarQuantidade));
         Ui.atalho(r, "F4", () -> executar(this::removerItem));
         Ui.atalho(r, "F5", () -> executar(this::aplicarDesconto));
+        Ui.atalho(r, "F6", () -> executar(() -> CaixaView.movimento(this, TipoMovCaixa.SANGRIA)));
         Ui.atalho(r, "F8", () -> executar(this::cancelarVenda));
         Ui.atalho(r, "F10", () -> executar(this::finalizar));
         Ui.atalho(r, "UP", () -> moverSelecao(-1));
@@ -193,14 +198,25 @@ public class PdvView extends JFrame {
         String txt = campo.getText().trim();
         campo.setText("");
         if (txt.isEmpty()) return;
-        if (txt.matches("(\\d+\\*)?\\d+")) mostrarUltimo(ctrl.adicionarPorCodigo(txt)); // leitor / código digitado
-        else pesquisar(txt);                                                              // texto: abre a pesquisa
+        if (txt.matches("((\\d+([.,]\\d+)?)\\*)?\\d+")) { // leitor / código digitado (aceita 0,350*codigo)
+            try {
+                mostrarUltimo(ctrl.adicionarPorCodigo(txt));
+            } catch (PesoObrigatorioException ex) {                // produto por peso: pede o peso na balança
+                pedirPeso(ex.getProduto());
+            }
+        } else pesquisar(txt);                                      // texto: abre a pesquisa
     }
 
     private void pesquisar(String inicial) {
         campo.setText("");
         PesquisaProdutoDialog.Escolha e = PesquisaProdutoDialog.escolher(this, ctrl, inicial);
         if (e != null) mostrarUltimo(ctrl.adicionar(e.produto(), e.quantidade()));
+    }
+
+    private void pedirPeso(Produto p) {
+        String s = JOptionPane.showInputDialog(this, p.descricao() + "  (" + Fmt.moeda(p.preco()) + " por " + p.unidade()
+                + ")\nInforme o peso/volume lido na balança (ex.: 0,350):", "Venda por peso", JOptionPane.QUESTION_MESSAGE);
+        if (s != null && !s.isBlank()) mostrarUltimo(ctrl.adicionar(p, Fmt.quantidade(s, "peso", true)));
     }
 
     private int indiceAlvo() {
@@ -214,8 +230,8 @@ public class PdvView extends JFrame {
         int i = indiceAlvo();
         ItemVenda item = ctrl.getVenda().getItens().get(i);
         String s = JOptionPane.showInputDialog(this, "Nova quantidade para " + item.getDescricao() + ":",
-                String.valueOf(item.getQuantidade()));
-        if (s != null) ctrl.alterarQuantidade(i, Fmt.inteiro(s, "quantidade"));
+                Fmt.qtd(item.getQuantidade()));
+        if (s != null) ctrl.alterarQuantidade(i, Fmt.quantidade(s, "quantidade", Produto.fracionada(item.getUnidade())));
     }
 
     private void removerItem() {
@@ -277,7 +293,7 @@ public class PdvView extends JFrame {
     // ------------------------------------------------------------------ exibição
     private void mostrarUltimo(ItemVenda i) {
         lblUltimo.setText("<html><body style='width:370px'>" + i.getDescricao() + "</body></html>");
-        lblUltimoDet.setText(i.getQuantidade() + " x " + Fmt.moeda(i.getPreco()) + " = " + Fmt.moeda(i.getSubtotal()));
+        lblUltimoDet.setText(Fmt.qtd(i.getQuantidade()) + " " + i.getUnidade() + " x " + Fmt.moeda(i.getPreco()) + " = " + Fmt.moeda(i.getSubtotal()));
         lblTroco.setText(" ");
     }
 
@@ -308,7 +324,7 @@ public class PdvView extends JFrame {
                 case 0 -> r + 1;
                 case 1 -> i.getCodigoBarras();
                 case 2 -> i.getDescricao();
-                case 3 -> i.getQuantidade();
+                case 3 -> Fmt.qtd(i.getQuantidade()) + " " + i.getUnidade();
                 case 4 -> Fmt.num(i.getPreco());
                 default -> Fmt.num(i.getSubtotal());
             };

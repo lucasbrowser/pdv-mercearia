@@ -28,8 +28,8 @@ public class ProdutoTableModel extends AbstractTableModel {
             case 1 -> p.descricao();
             case 2 -> p.unidade();
             case 3 -> Fmt.num(p.preco());
-            case 4 -> p.estoque();
-            case 5 -> p.estoqueMinimo();
+            case 4 -> Fmt.qtd(p.estoque());
+            case 5 -> Fmt.qtd(p.estoqueMinimo());
             default -> p.ativo() ? "Sim" : "Não";
         };
     }
@@ -41,7 +41,7 @@ public class ProdutoTableModel extends AbstractTableModel {
                 Component comp = super.getTableCellRendererComponent(t, v, sel, foco, r, c);
                 Produto p = modelo.get(r);
                 if (!sel) comp.setForeground(!p.ativo() ? Color.GRAY
-                        : p.estoque() <= p.estoqueMinimo() ? new Color(0xC62828) : t.getForeground());
+                        : p.baixoEstoque() ? new Color(0xC62828) : t.getForeground());
                 return comp;
             }
         });

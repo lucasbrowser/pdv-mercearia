@@ -28,16 +28,17 @@ public class ProdutoController {
         if (codigo.isBlank()) throw new NegocioException("Informe o código de barras.");
         if (descricao.isBlank()) throw new NegocioException("Informe a descrição.");
         BigDecimal valor = Fmt.parse(preco).setScale(2, RoundingMode.HALF_UP);
-        if (valor.signum() <= 0) throw new NegocioException("O preço deve ser maior que zero.");
-        int min = Fmt.inteiro(minimo, "estoque mínimo");
-        if (min < 0) throw new NegocioException("O estoque mínimo não pode ser negativo.");
+        if (valor.signum() <= 0) throw new NegocioException("O preço deve ser maior que zero (para KG/LT informe o preço por unidade de medida).");
+        boolean fracionado = Produto.fracionada(unidade);
+        BigDecimal min = Fmt.quantidade(minimo, "estoque mínimo", fracionado);
+        if (min.signum() < 0) throw new NegocioException("O estoque mínimo não pode ser negativo.");
 
-        Produto p = new Produto(id, codigo.trim(), descricao.trim(), unidade, valor, 0, min, ativo);
+        Produto p = new Produto(id, codigo.trim(), descricao.trim(), unidade, valor, BigDecimal.ZERO, min, ativo);
         if (id == 0) {
-            int est = Fmt.inteiro(estoqueInicial, "estoque inicial");
-            if (est < 0) throw new NegocioException("O estoque inicial não pode ser negativo.");
+            BigDecimal est = Fmt.quantidade(estoqueInicial, "estoque inicial", fracionado);
+            if (est.signum() < 0) throw new NegocioException("O estoque inicial não pode ser negativo.");
             long novoId = dao.inserir(p);
-            if (est > 0) estoqueDAO.movimentar(novoId, TipoMovimento.ENTRADA, est, "Estoque inicial", Sessao.atual().id());
+            if (est.signum() > 0) estoqueDAO.movimentar(novoId, TipoMovimento.ENTRADA, est, "Estoque inicial", Sessao.atual().id());
         } else {
             dao.atualizar(p);
         }

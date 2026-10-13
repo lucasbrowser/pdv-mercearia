@@ -19,8 +19,12 @@ public class ProdutoDAO {
     }
 
     public List<Produto> pesquisar(String termo, boolean apenasAtivos) {
+        return pesquisar(termo, apenasAtivos, 500);
+    }
+
+    public List<Produto> pesquisar(String termo, boolean apenasAtivos, int limite) {
         String sql = "SELECT * FROM produto WHERE (descricao LIKE ? OR codigo_barras LIKE ?)"
-                + (apenasAtivos ? " AND ativo = 1" : "") + " ORDER BY descricao LIMIT 500";
+                + (apenasAtivos ? " AND ativo = 1" : "") + " ORDER BY descricao LIMIT " + limite;
         List<Produto> lista = new ArrayList<>();
         try (Connection c = Database.get(); PreparedStatement ps = c.prepareStatement(sql)) {
             String like = "%" + (termo == null ? "" : termo.trim()) + "%";
@@ -43,7 +47,7 @@ public class ProdutoDAO {
             ps.setString(2, p.descricao());
             ps.setString(3, p.unidade());
             ps.setString(4, p.preco().toPlainString());
-            ps.setInt(5, p.estoqueMinimo());
+            ps.setLong(5, Database.milesimos(p.estoqueMinimo()));
             ps.setInt(6, p.ativo() ? 1 : 0);
             ps.executeUpdate();
             try (ResultSet k = ps.getGeneratedKeys()) {
@@ -63,7 +67,7 @@ public class ProdutoDAO {
             ps.setString(2, p.descricao());
             ps.setString(3, p.unidade());
             ps.setString(4, p.preco().toPlainString());
-            ps.setInt(5, p.estoqueMinimo());
+            ps.setLong(5, Database.milesimos(p.estoqueMinimo()));
             ps.setInt(6, p.ativo() ? 1 : 0);
             ps.setLong(7, p.id());
             ps.executeUpdate();
@@ -85,7 +89,7 @@ public class ProdutoDAO {
 
     private Produto map(ResultSet rs) throws SQLException {
         return new Produto(rs.getLong("id"), rs.getString("codigo_barras"), rs.getString("descricao"),
-                rs.getString("unidade"), Database.dec(rs, "preco"), rs.getInt("estoque"),
-                rs.getInt("estoque_minimo"), rs.getInt("ativo") == 1);
+                rs.getString("unidade"), Database.dec(rs, "preco"), Database.qtd(rs.getLong("estoque")),
+                Database.qtd(rs.getLong("estoque_minimo")), rs.getInt("ativo") == 1);
     }
 }

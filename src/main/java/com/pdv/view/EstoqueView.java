@@ -59,7 +59,7 @@ public class EstoqueView extends JDialog {
 
     private void carregar() {
         modelo.setDados(ctrl.listar(busca.getText(), baixo.isSelected()));
-        long n = modelo.getDados().stream().filter(p -> p.estoque() <= p.estoqueMinimo()).count();
+        long n = modelo.getDados().stream().filter(Produto::baixoEstoque).count();
         alerta.setText(n > 0 ? "⚠ " + n + " produto(s) com estoque baixo" : " ");
     }
 
@@ -67,7 +67,7 @@ public class EstoqueView extends JDialog {
         movs.setRowCount(0);
         for (MovimentoEstoque m : ctrl.historico())
             movs.addRow(new Object[]{m.dataHora().format(Fmt.DATA_HORA), m.produto(), m.tipo().getRotulo(),
-                    (m.quantidade() > 0 ? "+" : "") + m.quantidade(), m.motivo(), m.usuario()});
+                    (m.quantidade().signum() > 0 ? "+" : "") + Fmt.qtd(m.quantidade()), m.motivo(), m.usuario()});
     }
 
     private void movimentar(TipoMovimento tipo) {
@@ -76,7 +76,7 @@ public class EstoqueView extends JDialog {
         Produto p = modelo.get(linha);
         JTextField qtd = new JTextField(8);
         JTextField motivo = new JTextField(24);
-        Object[] msg = {"Produto: " + p.descricao() + "  (estoque atual: " + p.estoque() + ")",
+        Object[] msg = {"Produto: " + p.descricao() + "  (estoque atual: " + Fmt.qtd(p.estoque()) + " " + p.unidade() + ")",
                 tipo == TipoMovimento.AJUSTE ? "Nova quantidade em estoque (contagem física):" : "Quantidade:", qtd,
                 tipo == TipoMovimento.ENTRADA ? "Observação (opcional):" : "Motivo (obrigatório):", motivo};
         if (JOptionPane.showConfirmDialog(this, msg, tipo.getRotulo(), JOptionPane.OK_CANCEL_OPTION,

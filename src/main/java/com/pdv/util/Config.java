@@ -16,6 +16,8 @@ public final class Config {
         P.setProperty("mercado.cnpj", "00.000.000/0000-00");
         P.setProperty("mercado.endereco", "Rua Exemplo, 100 - Centro");
         P.setProperty("mercado.telefone", "(11) 0000-0000");
+        P.setProperty("balanca.etiqueta", "true"); // aceita etiqueta EAN-13 de balança: 2 CCCC PPPPP D (peso em gramas)
+        P.setProperty("balanca.prefixo", "2");
         P.setProperty("impressora.ativa", "true");
         P.setProperty("impressora.nome", "");      // vazio = impressora padrão do sistema
         P.setProperty("impressora.colunas", "48"); // 48 = bobina 80mm | 32 = bobina 58mm

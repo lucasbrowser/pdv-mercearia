@@ -9,6 +9,7 @@ public class Venda {
     private long id;
     private LocalDateTime dataHora = LocalDateTime.now();
     private long usuarioId;
+    private long caixaId;
     private String usuarioNome = "";
     private final List<ItemVenda> itens = new ArrayList<>();
     private BigDecimal desconto = BigDecimal.ZERO;
@@ -23,6 +24,8 @@ public class Venda {
     public void setDataHora(LocalDateTime dataHora) { this.dataHora = dataHora; }
     public long getUsuarioId() { return usuarioId; }
     public void setUsuarioId(long usuarioId) { this.usuarioId = usuarioId; }
+    public long getCaixaId() { return caixaId; }
+    public void setCaixaId(long caixaId) { this.caixaId = caixaId; }
     public String getUsuarioNome() { return usuarioNome; }
     public void setUsuarioNome(String usuarioNome) { this.usuarioNome = usuarioNome; }
     public List<ItemVenda> getItens() { return itens; }

@@ -35,7 +35,7 @@ public class ProdutoView extends JDialog {
         form.setBorder(BorderFactory.createTitledBorder("Dados do produto"));
         Ui.linha(form, 0, "Código de barras:", codigo);
         Ui.linha(form, 1, "Descrição:", descricao);
-        Ui.linha(form, 2, "Unidade:", unidade);
+        Ui.linha(form, 2, "Unidade (KG/LT = venda por peso):", unidade);
         Ui.linha(form, 3, "Preço (R$):", preco);
         Ui.linha(form, 4, "Estoque inicial:", estoque);
         Ui.linha(form, 5, "Estoque mínimo:", minimo);
@@ -79,9 +79,9 @@ public class ProdutoView extends JDialog {
         descricao.setText(p.descricao());
         unidade.setSelectedItem(p.unidade());
         preco.setText(Fmt.num(p.preco()));
-        estoque.setText(String.valueOf(p.estoque()));
+        estoque.setText(Fmt.qtd(p.estoque()));
         estoque.setEnabled(false); // estoque só muda pela tela de Estoque (rastreabilidade)
-        minimo.setText(String.valueOf(p.estoqueMinimo()));
+        minimo.setText(Fmt.qtd(p.estoqueMinimo()));
         ativo.setSelected(p.ativo());
     }
 
