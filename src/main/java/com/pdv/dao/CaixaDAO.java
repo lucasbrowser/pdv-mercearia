@@ -119,7 +119,7 @@ public class CaixaDAO {
         Map<String, BigDecimal> porForma = new LinkedHashMap<>();
         for (String f : FormaPagamento.TODAS) porForma.put(f, BigDecimal.ZERO);
         int vendas = 0, canceladas = 0;
-        BigDecimal totalVendas = BigDecimal.ZERO, suprimentos = BigDecimal.ZERO, sangrias = BigDecimal.ZERO;
+        BigDecimal totalVendas = BigDecimal.ZERO, suprimentos = BigDecimal.ZERO, sangrias = BigDecimal.ZERO, pagamentos = BigDecimal.ZERO;
         List<MovimentoCaixa> movs = new ArrayList<>();
         try (Connection c = Database.get()) {
             try (PreparedStatement ps = c.prepareStatement("SELECT forma_pagamento, status, total FROM venda WHERE caixa_id = ?")) {
@@ -142,7 +142,11 @@ public class CaixaDAO {
                     while (rs.next()) {
                         TipoMovCaixa tipo = TipoMovCaixa.valueOf(rs.getString(2));
                         BigDecimal valor = new BigDecimal(rs.getString(3));
-                        if (tipo == TipoMovCaixa.SANGRIA) sangrias = sangrias.add(valor); else suprimentos = suprimentos.add(valor);
+                        switch (tipo) {
+                            case SANGRIA -> sangrias = sangrias.add(valor);
+                            case SUPRIMENTO -> suprimentos = suprimentos.add(valor);
+                            case PAGAMENTO_CONTA -> pagamentos = pagamentos.add(valor);
+                        }
                         movs.add(new MovimentoCaixa(LocalDateTime.parse(rs.getString(1)), tipo, valor, rs.getString(4), rs.getString(5)));
                     }
                 }
@@ -150,8 +154,8 @@ public class CaixaDAO {
         } catch (SQLException e) {
             throw Database.erro(e);
         }
-        BigDecimal esperado = caixa.valorAbertura().add(porForma.get(FormaPagamento.DINHEIRO)).add(suprimentos).subtract(sangrias);
-        return new ResumoCaixa(caixa, porForma, vendas, canceladas, totalVendas, suprimentos, sangrias, esperado, movs);
+        BigDecimal esperado = caixa.valorAbertura().add(porForma.get(FormaPagamento.DINHEIRO)).add(suprimentos).subtract(sangrias).subtract(pagamentos);
+        return new ResumoCaixa(caixa, porForma, vendas, canceladas, totalVendas, suprimentos, sangrias, pagamentos, esperado, movs);
     }
 
     private Optional<Caixa> um(String sql, Object param) {

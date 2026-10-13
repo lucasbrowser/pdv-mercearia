@@ -10,7 +10,7 @@ import java.sql.*;
  */
 public final class Database {
     private static final String URL = "jdbc:sqlite:" + Config.diretorio().resolve("pdv.db");
-    private static final int VERSAO = 2;
+    private static final int VERSAO = 3;
 
     private Database() { }
 
@@ -63,6 +63,14 @@ public final class Database {
             "CREATE TABLE IF NOT EXISTS movimento_caixa (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "caixa_id INTEGER NOT NULL REFERENCES caixa(id), tipo TEXT NOT NULL, valor TEXT NOT NULL, "
                 + "motivo TEXT NOT NULL, usuario_id INTEGER NOT NULL REFERENCES usuario(id), data_hora TEXT NOT NULL)",
+            "CREATE TABLE IF NOT EXISTS fornecedor (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, documento TEXT, "
+                + "contato TEXT, telefone TEXT, email TEXT, endereco TEXT, observacao TEXT, ativo INTEGER NOT NULL DEFAULT 1)",
+            "CREATE TABLE IF NOT EXISTS conta_pagar (id INTEGER PRIMARY KEY AUTOINCREMENT, fornecedor_id INTEGER REFERENCES fornecedor(id), "
+                + "descricao TEXT NOT NULL, documento TEXT, valor TEXT NOT NULL, vencimento TEXT NOT NULL, "
+                + "status TEXT NOT NULL DEFAULT 'ABERTA', data_pagamento TEXT, valor_pago TEXT, forma_pagamento TEXT, "
+                + "usuario_pagamento_id INTEGER REFERENCES usuario(id), caixa_id INTEGER, observacao TEXT, "
+                + "lembrete_dias INTEGER NOT NULL DEFAULT 3, criada_em TEXT NOT NULL)",
+            "CREATE INDEX IF NOT EXISTS idx_conta_venc ON conta_pagar(vencimento)",
             "CREATE INDEX IF NOT EXISTS idx_venda_data ON venda(data_hora)",
             "CREATE INDEX IF NOT EXISTS idx_item_venda ON item_venda(venda_id)"
         };
@@ -86,6 +94,7 @@ public final class Database {
         if (versao >= VERSAO) return;
         garantirColuna(c, "venda", "caixa_id", "INTEGER");
         garantirColuna(c, "item_venda", "unidade", "TEXT NOT NULL DEFAULT 'UN'");
+        garantirColuna(c, "movimento_caixa", "conta_id", "INTEGER");
         try (Statement s = c.createStatement()) {
             if (bancoAntigo && versao < 2) { // v1 gravava quantidades inteiras: converte para milésimos
                 s.executeUpdate("UPDATE produto SET estoque = estoque * 1000, estoque_minimo = estoque_minimo * 1000");

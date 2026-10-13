@@ -45,6 +45,11 @@ public final class Fmt {
         return q.setScale(3, RoundingMode.HALF_UP);
     }
 
+    public static java.time.LocalDate data(String s) {
+        try { return java.time.LocalDate.parse(s.trim(), DATA); }
+        catch (RuntimeException e) { throw new NegocioException("Data inválida. Use o formato dd/MM/aaaa."); }
+    }
+
     public static int inteiro(String s, String campo) {
         try { return Integer.parseInt(s.trim()); }
         catch (RuntimeException e) { throw new NegocioException("Valor inválido para " + campo + "."); }

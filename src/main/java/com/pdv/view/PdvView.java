@@ -1,5 +1,6 @@
 package com.pdv.view;
 
+import com.pdv.controller.ContaPagarController;
 import com.pdv.controller.PesoObrigatorioException;
 import com.pdv.controller.VendaController;
 import com.pdv.model.ItemVenda;
@@ -92,6 +93,13 @@ public class PdvView extends JFrame {
         relogio.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
         JPanel dir = new JPanel();
         dir.setOpaque(false);
+        int nContas = new ContaPagarController().lembretes().size();
+        if (nContas > 0) {
+            JLabel aviso = new JLabel("Contas a pagar: " + nContas + "  |");
+            aviso.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+            aviso.setForeground(new Color(0xFFD54F));
+            dir.add(aviso);
+        }
         dir.add(oper);
         dir.add(relogio);
         JPanel topo = new JPanel(new BorderLayout());

@@ -40,6 +40,8 @@ public class LoginView extends JFrame {
     private void entrar() {
         ctrl.entrar(login.getText(), new String(senha.getPassword()));
         dispose();
-        new MainView().setVisible(true);
+        MainView menu = new MainView();
+        menu.setVisible(true);
+        menu.mostrarLembretesInicial();
     }
 }

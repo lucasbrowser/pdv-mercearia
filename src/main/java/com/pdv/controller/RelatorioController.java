@@ -1,6 +1,7 @@
 package com.pdv.controller;
 
 import com.pdv.dao.CaixaDAO;
+import com.pdv.dao.ContaPagarDAO;
 import com.pdv.dao.ProdutoDAO;
 import com.pdv.dao.VendaDAO;
 import com.pdv.model.*;
@@ -27,6 +28,7 @@ public class RelatorioController {
     private final VendaDAO vendaDAO = new VendaDAO();
     private final ProdutoDAO produtoDAO = new ProdutoDAO();
     private final CaixaDAO caixaDAO = new CaixaDAO();
+    private final ContaPagarDAO contaDAO = new ContaPagarDAO();
 
     public Relatorio gerar(TipoRelatorio tipo, LocalDate de, LocalDate ate) {
         Sessao.exigir(Permissao.VER_RELATORIOS);
@@ -39,6 +41,7 @@ public class RelatorioController {
             case MAIS_VENDIDOS -> maisVendidos(de, ate);
             case ESTOQUE -> estoque();
             case FECHAMENTOS -> fechamentos(de, ate);
+            case CONTAS_PAGAR -> contasPagar(de, ate);
         };
     }
 
@@ -102,6 +105,27 @@ public class RelatorioController {
                 linhas, "Valor total em estoque (a preço de venda): " + Fmt.moeda(valorTotal) + "  |  Produtos com estoque baixo/zerado: " + baixos);
     }
 
+    private Relatorio contasPagar(LocalDate de, LocalDate ate) {
+        LocalDate hoje = LocalDate.now();
+        List<Object[]> linhas = new ArrayList<>();
+        BigDecimal aberto = BigDecimal.ZERO, vencido = BigDecimal.ZERO, pago = BigDecimal.ZERO;
+        for (ContaPagar c : contaDAO.listar(de, ate)) {
+            ContaPagar.Situacao sit = c.situacao(hoje);
+            if (sit == ContaPagar.Situacao.PAGA) pago = pago.add(c.valorPago());
+            else if (c.aberta()) {
+                aberto = aberto.add(c.valor());
+                if (sit == ContaPagar.Situacao.VENCIDA) vencido = vencido.add(c.valor());
+            }
+            linhas.add(new Object[]{c.vencimento().format(Fmt.DATA), c.fornecedorNome(), c.descricao(), c.documento(),
+                    Fmt.num(c.valor()), sit.getRotulo(),
+                    c.dataPagamento() == null ? "-" : c.dataPagamento().format(Fmt.DATA_HORA),
+                    c.valorPago() == null ? "-" : Fmt.num(c.valorPago()), c.formaPagamento().isBlank() ? "-" : c.formaPagamento()});
+        }
+        return new Relatorio("Contas a pagar por vencimento (" + de.format(Fmt.DATA) + " a " + ate.format(Fmt.DATA) + ")",
+                new String[]{"Vencimento", "Fornecedor", "Descrição", "Documento", "Valor (R$)", "Situação", "Pago em", "Valor pago (R$)", "Forma"},
+                linhas, "Em aberto: " + Fmt.moeda(aberto) + "  |  Vencido: " + Fmt.moeda(vencido) + "  |  Pago no período: " + Fmt.moeda(pago));
+    }
+
     private Relatorio fechamentos(LocalDate de, LocalDate ate) {
         List<Object[]> linhas = new ArrayList<>();
         BigDecimal vendas = BigDecimal.ZERO, difs = BigDecimal.ZERO;
@@ -111,13 +135,13 @@ public class RelatorioController {
             if (c.diferenca() != null) difs = difs.add(c.diferenca());
             linhas.add(new Object[]{c.id(), c.dataAbertura().format(Fmt.DATA_HORA), c.abertoPor(),
                     c.dataFechamento() == null ? "-" : c.dataFechamento().format(Fmt.DATA_HORA), Fmt.num(c.valorAbertura()),
-                    Fmt.num(r.totalVendas()), Fmt.num(r.sangrias()),
+                    Fmt.num(r.totalVendas()), Fmt.num(r.sangrias().add(r.pagamentosContas())),
                     c.valorEsperado() == null ? Fmt.num(r.esperadoDinheiro()) : Fmt.num(c.valorEsperado()),
                     c.valorContado() == null ? "-" : Fmt.num(c.valorContado()),
                     c.diferenca() == null ? "-" : Fmt.num(c.diferenca()), c.aberto() ? "ABERTO" : "FECHADO"});
         }
         return new Relatorio("Fechamentos de caixa (" + de.format(Fmt.DATA) + " a " + ate.format(Fmt.DATA) + ")",
-                new String[]{"Caixa", "Abertura", "Aberto por", "Fechamento", "Fundo (R$)", "Vendas (R$)", "Sangrias (R$)",
+                new String[]{"Caixa", "Abertura", "Aberto por", "Fechamento", "Fundo (R$)", "Vendas (R$)", "Saídas: sangria + contas (R$)",
                         "Esperado (R$)", "Contado (R$)", "Diferença (R$)", "Status"},
                 linhas, "Vendas no período: " + Fmt.moeda(vendas) + "  |  Soma das diferenças (sobras/faltas): " + Fmt.moeda(difs));
     }

@@ -72,6 +72,23 @@ Linux: crie a fila no CUPS em modo raw. Reimprima/visualize cupons em Menu > Ven
 Vendas por dia, por forma de pagamento, por operador, produtos mais vendidos, posição/valor de estoque e
 fechamentos de caixa (com sobras/faltas). Todos com filtro de período e **exportação CSV** (abre no Excel).
 
+## Fornecedores e contas a pagar (v1.2)
+- **Menu > Fornecedores**: cadastro (nome, CNPJ/CPF, contato, telefone, e-mail, endereço, observação; inativar em vez de excluir).
+- **Menu > Contas a pagar**: nova conta com fornecedor, descrição, nº do documento, valor, vencimento e
+  **parcelamento mensal** (1 a 60 parcelas; os centavos que sobram ficam na 1ª parcela). Editar/cancelar só enquanto em aberto.
+  Linhas coloridas: vencida (vermelho), vence hoje (laranja), paga (verde). Totais de aberto/vencido/pago no rodapé.
+- **Lembretes em forma de prancheta (clipboard)**: cada conta tem "avisar N dias antes" (padrão 3). Ao entrar no sistema
+  abre uma prancheta com VENCIDAS / VENCEM HOJE / PRÓXIMOS VENCIMENTOS. O botão "Lembretes" no menu fica amarelo (ou vermelho
+  se houver vencidas) e é reavaliado a cada 15 min; o PDV mostra "Contas a pagar: N" no cabeçalho.
+- **Pagamento**: formas "Dinheiro do caixa", PIX/Transferência, Boleto/Banco, Cartão e Outros.
+  - *Dinheiro do caixa*: exige caixa aberto e saldo na gaveta; a saída é lançada no caixa **na mesma transação**
+    (movimento "Pagamento de conta"), reduz o dinheiro esperado no fechamento, aparece no resumo/relatório do caixa
+    e imprime comprovante.
+- Novo relatório: **Contas a pagar (por vencimento)**; o relatório de fechamentos soma sangrias + pagamentos de contas.
+- Permissão nova: "Fornecedores e contas a pagar". Pagar com dinheiro do caixa exige também a permissão de caixa.
+- O banco é migrado automaticamente (esquema v3). Faça backup do `pdv.db` antes de atualizar.
+
 ## Limitações conhecidas / próximos passos
 - Cupom não fiscal; para NFC-e/SAT é necessário integração com SEFAZ/emissor.
 - Terminal único (um caixa aberto por vez); sem custo de compra (relatório de estoque usa preço de venda).
+- Pagamento de conta não pode ser estornado pela tela (corrija com ajuste/suprimento no caixa, se necessário).

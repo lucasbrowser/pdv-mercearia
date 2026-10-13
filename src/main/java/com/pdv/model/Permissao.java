@@ -7,6 +7,7 @@ public enum Permissao {
     CANCELAR_VENDA("Cancelar vendas finalizadas"),
     GERENCIAR_CAIXA("Abrir/fechar caixa, sangria e suprimento"),
     VER_RELATORIOS("Consultar relatórios"),
+    GERENCIAR_CONTAS("Fornecedores e contas a pagar"),
     GERENCIAR_PRODUTOS("Cadastrar e editar produtos"),
     GERENCIAR_ESTOQUE("Administrar estoque"),
     GERENCIAR_USUARIOS("Gerenciar usuários");

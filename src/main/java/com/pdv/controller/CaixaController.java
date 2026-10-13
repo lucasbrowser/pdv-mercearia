@@ -33,6 +33,8 @@ public class CaixaController {
     /** Retorna o movimento registrado (para o comprovante). */
     public Caixa movimentar(TipoMovCaixa tipo, String valorTexto, String motivo) {
         Sessao.exigir(Permissao.GERENCIAR_CAIXA);
+        if (tipo == TipoMovCaixa.PAGAMENTO_CONTA)
+            throw new NegocioException("Pagamentos de contas são feitos em Contas a pagar.");
         BigDecimal valor = Fmt.parse(valorTexto).setScale(2, RoundingMode.HALF_UP);
         if (valor.signum() <= 0) throw new NegocioException("Informe um valor maior que zero.");
         if (motivo.isBlank()) throw new NegocioException("Informe o motivo da " + tipo.getRotulo().toLowerCase() + ".");

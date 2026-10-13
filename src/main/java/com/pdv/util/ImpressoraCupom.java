@@ -108,6 +108,7 @@ public final class ImpressoraCupom {
         sb.append(par("(+) Vendas em dinheiro", Fmt.num(r.vendasPorForma().get(FormaPagamento.DINHEIRO)), w));
         sb.append(par("(+) Suprimentos", Fmt.num(r.suprimentos()), w));
         sb.append(par("(-) Sangrias", Fmt.num(r.sangrias()), w));
+        sb.append(par("(-) Pagto de contas", Fmt.num(r.pagamentosContas()), w));
         sb.append(par("= DINHEIRO ESPERADO", Fmt.num(r.esperadoDinheiro()), w));
         if (c.valorContado() != null) {
             sb.append(par("Dinheiro contado", Fmt.num(c.valorContado()), w));
@@ -118,7 +119,7 @@ public final class ImpressoraCupom {
         if (!r.movimentos().isEmpty()) {
             sb.append(tracos).append("MOVIMENTOS DE CAIXA\n");
             for (MovimentoCaixa m : r.movimentos()) {
-                sb.append(par(m.dataHora().format(DateTimeFormatter.ofPattern("HH:mm")) + " " + (m.tipo() == TipoMovCaixa.SANGRIA ? "Sangria" : "Suprimento"),
+                sb.append(par(m.dataHora().format(DateTimeFormatter.ofPattern("HH:mm")) + " " + m.tipo().getCurto(),
                         Fmt.num(m.valor()), w));
                 sb.append("   ").append(cortar(m.motivo() + " (" + m.usuario() + ")", w - 3)).append('\n');
             }
@@ -132,7 +133,7 @@ public final class ImpressoraCupom {
         int w = Config.getInt("impressora.colunas", 48);
         StringBuilder sb = new StringBuilder();
         centro(sb, Config.get("mercado.nome").toUpperCase(), w);
-        centro(sb, "COMPROVANTE DE " + (tipo == TipoMovCaixa.SANGRIA ? "SANGRIA" : "SUPRIMENTO"), w);
+        centro(sb, "COMPROVANTE DE " + (tipo == TipoMovCaixa.PAGAMENTO_CONTA ? "PAGAMENTO DE CONTA" : tipo.getCurto().toUpperCase()), w);
         sb.append("-".repeat(w)).append('\n');
         sb.append(par("Caixa", "#" + c.id(), w));
         sb.append(par("Data", java.time.LocalDateTime.now().format(Fmt.DATA_HORA), w));

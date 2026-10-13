@@ -6,7 +6,8 @@ public enum TipoRelatorio {
     OPERADOR("Vendas por operador"),
     MAIS_VENDIDOS("Produtos mais vendidos"),
     ESTOQUE("Posição de estoque (valor em estoque)"),
-    FECHAMENTOS("Fechamentos de caixa");
+    FECHAMENTOS("Fechamentos de caixa"),
+    CONTAS_PAGAR("Contas a pagar (por vencimento)");
 
     private final String rotulo;
 
