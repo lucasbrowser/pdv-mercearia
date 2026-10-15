@@ -43,6 +43,7 @@ public class RelatorioView extends JDialog {
         filtros.add(ate);
         filtros.add(Ui.botao("Gerar", this::gerar));
         filtros.add(Ui.botao("Exportar CSV", this::exportar));
+        filtros.add(Ui.cancelar(this));
         tipo.addActionListener(e -> {
             boolean p = ((TipoRelatorio) tipo.getSelectedItem()).usaPeriodo();
             de.setEnabled(p);

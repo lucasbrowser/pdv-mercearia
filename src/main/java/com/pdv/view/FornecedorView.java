@@ -48,6 +48,7 @@ public class FornecedorView extends JDialog {
         JPanel botoes = new JPanel();
         botoes.add(Ui.botao("Novo", this::novo));
         botoes.add(Ui.botao("Salvar", this::salvar));
+        botoes.add(Ui.cancelar(this));
 
         JPanel direita = new JPanel(new BorderLayout());
         direita.setPreferredSize(new Dimension(420, 0));

@@ -39,7 +39,7 @@ public class PagamentoDialog extends JDialog {
         JButton ok = Ui.botao("Confirmar (Enter)", this::confirmar);
         JPanel botoes = new JPanel();
         botoes.add(ok);
-        botoes.add(Ui.botao("Voltar (Esc)", this::dispose));
+        botoes.add(Ui.botao("Cancelar (Esc)", this::dispose));
 
         forma.addActionListener(e -> atualizar());
         Ui.aoDigitar(recebido, this::atualizar);

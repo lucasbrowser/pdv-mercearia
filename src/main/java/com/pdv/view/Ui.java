@@ -48,6 +48,18 @@ public final class Ui {
         });
     }
 
+    /**
+     * Botão "Cancelar": fecha a tela atual e devolve o controle à tela que a abriu (janela proprietária).
+     * Também associa a tecla ESC à mesma ação.
+     */
+    public static JButton cancelar(JDialog d) {
+        JButton b = new JButton("Cancelar", Icones.get("cancelar", 16));
+        b.setToolTipText("Fecha esta tela e retorna à tela anterior (Esc)");
+        b.addActionListener(e -> d.dispose());
+        atalho(d.getRootPane(), "ESCAPE", d::dispose);
+        return b;
+    }
+
     public static JTable tabela(TableModel m) {
         JTable t = new JTable(m);
         t.setRowHeight(26);

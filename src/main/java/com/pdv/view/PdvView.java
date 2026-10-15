@@ -19,12 +19,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Frente de caixa. O foco fica SEMPRE no campo de código: o leitor de código de barras
- * "digita" o código e envia Enter, então basta bipar. Texto (não numérico) abre a pesquisa.
+ * Frente de caixa (aberta a partir da tela principal). O foco fica SEMPRE no campo de código:
+ * o leitor de código de barras "digita" o código e envia Enter, então basta bipar.
+ * Texto (não numérico) abre a pesquisa. Esc volta para a tela principal.
  */
 public class PdvView extends JFrame {
     private static final Color ESCURO = new Color(0x1E272E);
@@ -155,8 +155,8 @@ public class PdvView extends JFrame {
         campo.setFont(new Font(Font.MONOSPACED, Font.BOLD, 30));
         campo.setBorder(BorderFactory.createTitledBorder(
                 "Código de barras ou descrição  (Enter adiciona  •  3*código = 3 un.  •  0,350*código = peso)"));
-        JLabel atalhos = new JLabel("F2 Pesquisar   F3 Alterar qtd   F4 Remover item   F5 Desconto   "
-                + "F6 Sangria   F8 Cancelar venda   F10 Finalizar   ↑↓ Selecionar item   Esc Sair");
+        JLabel atalhos = new JLabel("F2 Pesquisar   F3 Alterar qtd   F4 Remover item   F5 Desconto   F6 Sangria   "
+                + "F8 Cancelar venda   F10 Finalizar   ↑↓ Selecionar item   Esc Sair");
         atalhos.setForeground(Color.DARK_GRAY);
         JPanel baixo = new JPanel(new BorderLayout(0, 4));
         baixo.setBorder(BorderFactory.createEmptyBorder(6, 12, 8, 12));
@@ -209,10 +209,12 @@ public class PdvView extends JFrame {
         if (txt.matches("((\\d+([.,]\\d+)?)\\*)?\\d+")) { // leitor / código digitado (aceita 0,350*codigo)
             try {
                 mostrarUltimo(ctrl.adicionarPorCodigo(txt));
-            } catch (PesoObrigatorioException ex) {                // produto por peso: pede o peso na balança
+            } catch (PesoObrigatorioException ex) {          // produto por peso: pede o peso lido na balança
                 pedirPeso(ex.getProduto());
             }
-        } else pesquisar(txt);                                      // texto: abre a pesquisa
+        } else {
+            pesquisar(txt);                                   // texto: abre a pesquisa
+        }
     }
 
     private void pesquisar(String inicial) {
@@ -237,8 +239,7 @@ public class PdvView extends JFrame {
     private void alterarQuantidade() {
         int i = indiceAlvo();
         ItemVenda item = ctrl.getVenda().getItens().get(i);
-        String s = JOptionPane.showInputDialog(this, "Nova quantidade para " + item.getDescricao() + ":",
-                Fmt.qtd(item.getQuantidade()));
+        String s = JOptionPane.showInputDialog(this, "Nova quantidade para " + item.getDescricao() + ":", Fmt.qtd(item.getQuantidade()));
         if (s != null) ctrl.alterarQuantidade(i, Fmt.quantidade(s, "quantidade", Produto.fracionada(item.getUnidade())));
     }
 
@@ -276,7 +277,7 @@ public class PdvView extends JFrame {
             ImpressoraCupom.imprimir(v);
         } catch (NegocioException ex) {
             Ui.erro(this, new NegocioException("Venda #" + v.getId() + " registrada, mas o cupom NÃO foi impresso:\n"
-                    + ex.getMessage() + "\n\nReimprima em Menu > Vendas > Reimprimir."));
+                    + ex.getMessage() + "\n\nReimprima em Consultas > Histórico de vendas."));
         }
     }
 

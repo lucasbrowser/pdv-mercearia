@@ -34,6 +34,8 @@ public class CaixaView extends JDialog {
         botoes.add(Ui.botao("Fechar caixa", () -> { fecharCaixa(this); atualizar(); }));
         botoes.add(Ui.botao("Imprimir resumo", () -> ImpressoraCupom.imprimirTexto(ImpressoraCupom.montarTextoCaixa(ctrl.resumoAberto()))));
 
+        botoes.add(Ui.cancelar(this));
+
         add(status, BorderLayout.NORTH);
         add(new JScrollPane(resumo), BorderLayout.CENTER);
         add(botoes, BorderLayout.SOUTH);

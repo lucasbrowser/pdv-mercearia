@@ -47,13 +47,15 @@ public class VendasView extends JDialog {
             ImpressoraCupom.imprimir(ctrl.buscar(selecionada().getId()));
             Ui.info(this, "Cupom enviado para a impressora.");
         }));
-        botoes.add(Ui.botao("Cancelar venda", () -> {
+        botoes.add(Ui.botao("Cancelar venda selecionada", () -> {
             Venda v = selecionada();
             if (Ui.confirmar(this, "Cancelar a venda #" + v.getId() + "? Os itens voltarão ao estoque.")) {
                 ctrl.cancelar(v.getId());
                 filtrar();
             }
         }));
+
+        botoes.add(Ui.cancelar(this));
 
         add(topo, BorderLayout.NORTH);
         add(new JScrollPane(tabela), BorderLayout.CENTER);

@@ -64,11 +64,13 @@ public class ContaPagarView extends JDialog {
         botoes.add(Ui.botao("Nova conta", () -> { if (ContaPagarForm.abrir(this, ctrl, null)) carregar(); }));
         botoes.add(Ui.botao("Editar", () -> { if (ContaPagarForm.abrir(this, ctrl, selecionada())) carregar(); }));
         botoes.add(Ui.botao("Pagar", this::pagar));
-        botoes.add(Ui.botao("Cancelar conta", () -> {
+        botoes.add(Ui.botao("Cancelar conta selecionada", () -> {
             ContaPagar c = selecionada();
             if (Ui.confirmar(this, "Cancelar a conta \"" + c.descricao() + "\"?")) { ctrl.cancelar(c.id()); carregar(); }
         }));
         botoes.add(Ui.botao("Fornecedores", () -> new FornecedorView(this).setVisible(true)));
+
+        botoes.add(Ui.cancelar(this));
 
         resumo.setFont(resumo.getFont().deriveFont(Font.BOLD));
         resumo.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
