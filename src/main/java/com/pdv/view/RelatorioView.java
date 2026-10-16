@@ -17,8 +17,8 @@ import java.time.format.DateTimeParseException;
 public class RelatorioView extends JDialog {
     private final RelatorioController ctrl = new RelatorioController();
     private final JComboBox<TipoRelatorio> tipo = new JComboBox<>(TipoRelatorio.values());
-    private final JTextField de = new JTextField(LocalDate.now().withDayOfMonth(1).format(Fmt.DATA), 9);
-    private final JTextField ate = new JTextField(LocalDate.now().format(Fmt.DATA), 9);
+    private final DatePicker de = new DatePicker(LocalDate.now().withDayOfMonth(1));
+    private final DatePicker ate = new DatePicker(LocalDate.now());
     private final DefaultTableModel modelo = new DefaultTableModel() {
         @Override public boolean isCellEditable(int r, int c) { return false; }
     };

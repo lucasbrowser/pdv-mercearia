@@ -27,8 +27,8 @@ public class ContaPagarView extends JDialog {
     };
     private final JTable tabela = Ui.tabela(modelo);
     private final JComboBox<Filtro> filtro = new JComboBox<>(Filtro.values());
-    private final JTextField de = new JTextField(LocalDate.now().minusMonths(3).format(Fmt.DATA), 9);
-    private final JTextField ate = new JTextField(LocalDate.now().plusMonths(3).format(Fmt.DATA), 9);
+    private final DatePicker de = new DatePicker(LocalDate.now().minusMonths(3));
+    private final DatePicker ate = new DatePicker(LocalDate.now().plusMonths(3));
     private final JLabel resumo = new JLabel(" ");
     private List<ContaPagar> contas = List.of();
 

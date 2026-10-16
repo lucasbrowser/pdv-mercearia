@@ -21,8 +21,8 @@ public class VendasView extends JDialog {
         @Override public boolean isCellEditable(int r, int c) { return false; }
     };
     private final JTable tabela = Ui.tabela(modelo);
-    private final JTextField de = new JTextField(LocalDate.now().format(Fmt.DATA), 9);
-    private final JTextField ate = new JTextField(LocalDate.now().format(Fmt.DATA), 9);
+    private final DatePicker de = new DatePicker(LocalDate.now());
+    private final DatePicker ate = new DatePicker(LocalDate.now());
     private final JLabel resumo = new JLabel(" ");
     private List<Venda> vendas = List.of();
 

@@ -17,8 +17,9 @@ public class ContaPagarForm extends JDialog {
     private final ContaPagar existente;
     private final JComboBox<Fornecedor> fornecedor = new JComboBox<>();
     private final JTextField descricao = new JTextField(26), documento = new JTextField(),
-            valor = new JTextField(), vencimento = new JTextField(), parcelas = new JTextField("1"),
+            valor = new JTextField(), parcelas = new JTextField("1"),
             lembrete = new JTextField("3"), obs = new JTextField();
+    private final DatePicker vencimento = new DatePicker(java.time.LocalDate.now());
     private boolean salvou;
 
     /** Retorna true se salvou. */
@@ -55,7 +56,7 @@ public class ContaPagarForm extends JDialog {
         Ui.linha(form, 1, "Descrição:", descricao);
         Ui.linha(form, 2, "Nº documento (NF/boleto):", documento);
         Ui.linha(form, 3, existente == null ? "Valor TOTAL (R$):" : "Valor (R$):", valor);
-        Ui.linha(form, 4, "1º vencimento (dd/MM/aaaa):", vencimento);
+        Ui.linha(form, 4, existente == null ? "1º vencimento:" : "Vencimento:", vencimento);
         Ui.linha(form, 5, "Parcelas (mensais):", parcelas);
         Ui.linha(form, 6, "Avisar quantos dias antes:", lembrete);
         Ui.linha(form, 7, "Observação:", obs);

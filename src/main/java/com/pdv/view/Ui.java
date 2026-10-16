@@ -52,11 +52,19 @@ public final class Ui {
      * Botão "Cancelar": fecha a tela atual e devolve o controle à tela que a abriu (janela proprietária).
      * Também associa a tecla ESC à mesma ação.
      */
-    public static JButton cancelar(JDialog d) {
+    public static JButton cancelar(JDialog d) { return cancelar(d, () -> true); }
+
+    /** Igual a {@link #cancelar(JDialog)}, mas só fecha se {@code podeFechar} permitir (ex.: confirmar perda de dados). */
+    public static JButton cancelar(JDialog d, java.util.function.BooleanSupplier podeFechar) {
+        Runnable fechar = () -> { if (podeFechar.getAsBoolean()) d.dispose(); };
         JButton b = new JButton("Cancelar", Icones.get("cancelar", 16));
         b.setToolTipText("Fecha esta tela e retorna à tela anterior (Esc)");
-        b.addActionListener(e -> d.dispose());
-        atalho(d.getRootPane(), "ESCAPE", d::dispose);
+        b.addActionListener(e -> fechar.run());
+        atalho(d.getRootPane(), "ESCAPE", fechar);
+        d.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); // o X da janela também passa pela confirmação
+        d.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowClosing(java.awt.event.WindowEvent e) { fechar.run(); }
+        });
         return b;
     }
 

@@ -54,6 +54,28 @@ Abre a partir da MainView (menu Vendas, botão PDV ou F2) em tela cheia; Esc vol
   F10 Finalizar (dinheiro com troco, débito, crédito, PIX) | Esc Sair do PDV.
 - Sem caixa aberto não é possível vender: o sistema oferece abrir o caixa ao entrar no PDV.
 
+## Telas de cadastro: modos e botões (v1.4)
+Produtos, Usuários e Fornecedores abrem em **modo consulta**: campos bloqueados, para não digitar/perder dados sem querer.
+
+| Situação | Campos | Novo | Editar | Salvar | Descartar |
+|---|---|---|---|---|---|
+| Ao abrir / sem seleção | bloqueados | sim | não | não | não |
+| Registro selecionado na tabela | bloqueados (só leitura) | sim | **sim** | não | não |
+| Novo cadastro (após clicar Novo) | liberados | não | não | sim | sim |
+| Editando (após clicar Editar) | liberados | não | não | sim | sim |
+
+- **Novo** libera os campos em branco; durante a digitação ele fica desabilitado, então não dá para apagar o que foi digitado por engano.
+- **Editar** libera o registro selecionado. Enquanto edita, a **tabela e a busca ficam bloqueadas** (não dá para trocar de registro).
+- **Descartar** desfaz a edição e restaura os dados originais (pede confirmação se algo foi alterado).
+- **Cancelar**, Esc e o X da janela fecham a tela; se houver dados digitados não salvos, pedem confirmação.
+- Uma linha de orientação acima do formulário indica o modo atual. No produto, o estoque inicial só é editável no cadastro novo
+  (depois, só pela tela Estoque); no usuário, senha em branco mantém a senha atual e o perfil Administrador marca/trava as permissões.
+
+## Campos de data (v1.4)
+Todos os campos de data (histórico de vendas, relatórios, contas a pagar e vencimento da conta) usam o componente **DatePicker**:
+máscara `dd/MM/aaaa`, botão de calendário (navegação por mês/ano, destaque do dia atual e botão "Hoje") e validação de datas
+inexistentes (ex.: 31/02). É Swing puro, sem dependências extras.
+
 ## Impressora térmica (cupom NÃO fiscal)
 Envia ESC/POS direto via `javax.print` (sem bibliotecas extras), com corte de papel.
 Em `config.properties`:

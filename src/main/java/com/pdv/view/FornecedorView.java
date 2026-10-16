@@ -2,6 +2,7 @@ package com.pdv.view;
 
 import com.pdv.controller.FornecedorController;
 import com.pdv.model.Fornecedor;
+import com.pdv.util.NegocioException;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,11 +20,21 @@ public class FornecedorView extends JDialog {
     private final JTextField nome = new JTextField(), documento = new JTextField(), contato = new JTextField(),
             telefone = new JTextField(), email = new JTextField(), endereco = new JTextField(), obs = new JTextField();
     private final JCheckBox ativo = new JCheckBox("Fornecedor ativo", true);
+    private final ModoCadastro modo;
     private List<Fornecedor> lista = List.of();
     private long idAtual = 0;
 
     public FornecedorView(Window pai) {
         super(pai, "Cadastro de Fornecedores", ModalityType.APPLICATION_MODAL);
+
+        JButton bNovo = Ui.botao("Novo", this::novo);
+        JButton bEditar = Ui.botao("Editar", this::editar);
+        JButton bSalvar = Ui.botao("Salvar", this::salvar);
+        JButton bDescartar = Ui.botao("Descartar", this::descartar);
+        modo = new ModoCadastro(bNovo, bEditar, bSalvar, bDescartar,
+                new JComponent[]{nome, documento, contato, telefone, email, endereco, obs, ativo},
+                new JComponent[0], new JComponent[]{tabela, busca});
+        modo.observar(nome, documento, contato, telefone, email, endereco, obs, ativo);
 
         JPanel topo = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topo.add(new JLabel("Buscar (nome, documento, contato):"));
@@ -46,22 +57,31 @@ public class FornecedorView extends JDialog {
         Ui.linha(form, 7, "", ativo);
 
         JPanel botoes = new JPanel();
-        botoes.add(Ui.botao("Novo", this::novo));
-        botoes.add(Ui.botao("Salvar", this::salvar));
-        botoes.add(Ui.cancelar(this));
+        botoes.add(bNovo);
+        botoes.add(bEditar);
+        botoes.add(bSalvar);
+        botoes.add(bDescartar);
+        botoes.add(Ui.cancelar(this, () -> modo.podeSair(this)));
 
         JPanel direita = new JPanel(new BorderLayout());
-        direita.setPreferredSize(new Dimension(420, 0));
-        direita.add(form, BorderLayout.NORTH);
-        direita.add(botoes, BorderLayout.CENTER);
+        direita.setPreferredSize(new Dimension(450, 0));
+        direita.add(modo.getRotulo(), BorderLayout.NORTH);
+        JPanel centro = new JPanel(new BorderLayout());
+        centro.add(form, BorderLayout.NORTH);
+        centro.add(botoes, BorderLayout.CENTER);
+        direita.add(centro, BorderLayout.CENTER);
 
         tabela.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && tabela.getSelectedRow() >= 0) preencher(lista.get(tabela.getSelectedRow()));
+            int r = tabela.getSelectedRow();
+            if (e.getValueIsAdjusting() || modo.editando() || r < 0) return;
+            Fornecedor f = lista.get(r);
+            modo.carregando(() -> preencher(f));
+            modo.consulta(true);
         });
 
         add(esquerda, BorderLayout.CENTER);
         add(direita, BorderLayout.EAST);
-        setSize(1150, 520);
+        setSize(1200, 540);
         setLocationRelativeTo(pai);
         carregar();
     }
@@ -71,14 +91,16 @@ public class FornecedorView extends JDialog {
         modelo.setRowCount(0);
         for (Fornecedor f : lista)
             modelo.addRow(new Object[]{f.nome(), f.documento(), f.contato(), f.telefone(), f.email(), f.ativo() ? "Sim" : "Não"});
+        if (!modo.editando()) {
+            idAtual = 0;
+            modo.carregando(this::limpar);
+            modo.consulta(false);
+        }
     }
 
-    private void novo() {
-        idAtual = 0;
-        tabela.clearSelection();
+    private void limpar() {
         for (JTextField t : new JTextField[]{nome, documento, contato, telefone, email, endereco, obs}) t.setText("");
         ativo.setSelected(true);
-        nome.requestFocusInWindow();
     }
 
     private void preencher(Fornecedor f) {
@@ -93,11 +115,39 @@ public class FornecedorView extends JDialog {
         ativo.setSelected(f.ativo());
     }
 
+    private void novo() {
+        tabela.clearSelection();
+        idAtual = 0;
+        modo.carregando(this::limpar);
+        modo.novo();
+        nome.requestFocusInWindow();
+    }
+
+    private void editar() {
+        if (idAtual == 0) throw new NegocioException("Selecione um fornecedor na tabela para editar.");
+        modo.edicao();
+        nome.requestFocusInWindow();
+    }
+
     private void salvar() {
         ctrl.salvar(idAtual, nome.getText(), documento.getText(), contato.getText(), telefone.getText(),
                 email.getText(), endereco.getText(), obs.getText(), ativo.isSelected());
         Ui.info(this, "Fornecedor salvo com sucesso.");
-        novo();
+        modo.consulta(false);
         carregar();
+    }
+
+    private void descartar() {
+        if (!modo.podeSair(this)) return;
+        int r = tabela.getSelectedRow();
+        boolean voltaParaRegistro = idAtual != 0 && r >= 0;
+        modo.consulta(voltaParaRegistro);
+        if (voltaParaRegistro) {
+            Fornecedor f = lista.get(r);
+            modo.carregando(() -> preencher(f));
+        } else {
+            idAtual = 0;
+            modo.carregando(this::limpar);
+        }
     }
 }
