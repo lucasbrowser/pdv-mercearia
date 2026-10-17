@@ -42,11 +42,11 @@ public class UsuarioView extends JDialog {
             perms.add(cb);
         }
 
-        JButton bNovo = Ui.botao("Novo", this::novo);
-        JButton bEditar = Ui.botao("Editar", this::editar);
-        JButton bSalvar = Ui.botao("Salvar", this::salvar);
-        JButton bDescartar = Ui.botao("Descartar", this::descartar);
-        modo = new ModoCadastro(bNovo, bEditar, bSalvar, bDescartar,
+        JButton bNovo = Ui.botao("Novo", "novo", 'N', this::novo);
+        JButton bEditar = Ui.botao("Editar", "editar", 'E', this::editar);
+        JButton bSalvar = Ui.botao("Salvar", "salvar", 'S', this::salvar);
+        JButton bCancelar = Ui.botao("Cancelar", "cancelar", 'C', this::descartar);
+        modo = new ModoCadastro(bNovo, bEditar, bSalvar, bCancelar,
                 new JComponent[]{nome, login, senha, admin, ativo}, new JComponent[0], new JComponent[]{tabela});
         modo.observar(nome, login, senha, admin, ativo);
         modo.observar(checks.values().toArray(new JComponent[0]));
@@ -62,15 +62,17 @@ public class UsuarioView extends JDialog {
         Ui.linha(form, 3, "", admin);
         Ui.linha(form, 4, "", ativo);
 
-        JPanel botoes = new JPanel();
+        JPanel botoes = new JPanel(new GridLayout(1, 4, 8, 0));
+        botoes.setBorder(BorderFactory.createEmptyBorder(8, 6, 6, 6));
         botoes.add(bNovo);
         botoes.add(bEditar);
         botoes.add(bSalvar);
-        botoes.add(bDescartar);
-        botoes.add(Ui.cancelar(this, () -> modo.podeSair(this)));
+        botoes.add(bCancelar);
+        Ui.igualar(botoes);
+        modo.instalar(this);
 
         JPanel direita = new JPanel(new BorderLayout());
-        direita.setPreferredSize(new Dimension(430, 0));
+        direita.setPreferredSize(new Dimension(540, 0));
         direita.add(modo.getRotulo(), BorderLayout.NORTH);
         JPanel centro = new JPanel(new BorderLayout());
         centro.add(form, BorderLayout.NORTH);

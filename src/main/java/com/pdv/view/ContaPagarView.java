@@ -58,19 +58,20 @@ public class ContaPagarView extends JDialog {
         topo.add(de);
         topo.add(new JLabel("até:"));
         topo.add(ate);
-        topo.add(Ui.botao("Filtrar", this::carregar));
+        topo.add(Ui.botao("Filtrar", "filtrar", 'T', this::carregar));
 
         JPanel botoes = new JPanel();
-        botoes.add(Ui.botao("Nova conta", () -> { if (ContaPagarForm.abrir(this, ctrl, null)) carregar(); }));
-        botoes.add(Ui.botao("Editar", () -> { if (ContaPagarForm.abrir(this, ctrl, selecionada())) carregar(); }));
-        botoes.add(Ui.botao("Pagar", this::pagar));
-        botoes.add(Ui.botao("Cancelar conta selecionada", () -> {
+        botoes.add(Ui.botao("Nova conta", "novo", 'N', () -> { if (ContaPagarForm.abrir(this, ctrl, null)) carregar(); }));
+        botoes.add(Ui.botao("Editar", "editar", 'E', () -> { if (ContaPagarForm.abrir(this, ctrl, selecionada())) carregar(); }));
+        botoes.add(Ui.botao("Pagar", "pagar", 'P', this::pagar));
+        botoes.add(Ui.botao("Cancelar conta selecionada", "cancelar", 'O', () -> {
             ContaPagar c = selecionada();
             if (Ui.confirmar(this, "Cancelar a conta \"" + c.descricao() + "\"?")) { ctrl.cancelar(c.id()); carregar(); }
         }));
-        botoes.add(Ui.botao("Fornecedores", () -> new FornecedorView(this).setVisible(true)));
+        botoes.add(Ui.botao("Fornecedores", "fornecedores", 'F', () -> new FornecedorView(this).setVisible(true)));
 
         botoes.add(Ui.cancelar(this));
+        Ui.igualar(botoes);
 
         resumo.setFont(resumo.getFont().deriveFont(Font.BOLD));
         resumo.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));

@@ -22,7 +22,7 @@ public class LoginView extends JFrame {
         Ui.linha(form, 0, "Usuário:", login);
         Ui.linha(form, 1, "Senha:", senha);
 
-        JButton entrar = Ui.botao("Entrar", this::entrar);
+        JButton entrar = Ui.botao("Entrar", "finalizar", 'E', this::entrar);
         JPanel rodape = new JPanel();
         rodape.add(entrar);
         getRootPane().setDefaultButton(entrar);

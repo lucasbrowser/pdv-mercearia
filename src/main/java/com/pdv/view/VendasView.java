@@ -32,22 +32,22 @@ public class VendasView extends JDialog {
         JPanel topo = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topo.add(new JLabel("De:")); topo.add(de);
         topo.add(new JLabel("Até:")); topo.add(ate);
-        topo.add(Ui.botao("Filtrar", this::filtrar));
+        topo.add(Ui.botao("Filtrar", "filtrar", 'F', this::filtrar));
         resumo.setFont(resumo.getFont().deriveFont(Font.BOLD));
         topo.add(resumo);
 
         JPanel botoes = new JPanel();
-        botoes.add(Ui.botao("Ver cupom", () -> {
+        botoes.add(Ui.botao("Ver cupom", "ver", 'V', () -> {
             JTextArea area = new JTextArea(ImpressoraCupom.montarTexto(ctrl.buscar(selecionada().getId())));
             area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
             area.setEditable(false);
             JOptionPane.showMessageDialog(this, new JScrollPane(area), "Cupom", JOptionPane.PLAIN_MESSAGE);
         }));
-        botoes.add(Ui.botao("Reimprimir", () -> {
+        botoes.add(Ui.botao("Reimprimir", "imprimir", 'R', () -> {
             ImpressoraCupom.imprimir(ctrl.buscar(selecionada().getId()));
             Ui.info(this, "Cupom enviado para a impressora.");
         }));
-        botoes.add(Ui.botao("Cancelar venda selecionada", () -> {
+        botoes.add(Ui.botao("Cancelar venda selecionada", "cancelar", 'D', () -> {
             Venda v = selecionada();
             if (Ui.confirmar(this, "Cancelar a venda #" + v.getId() + "? Os itens voltarão ao estoque.")) {
                 ctrl.cancelar(v.getId());
@@ -56,6 +56,7 @@ public class VendasView extends JDialog {
         }));
 
         botoes.add(Ui.cancelar(this));
+        Ui.igualar(botoes);
 
         add(topo, BorderLayout.NORTH);
         add(new JScrollPane(tabela), BorderLayout.CENTER);

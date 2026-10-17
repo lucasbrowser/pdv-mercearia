@@ -146,6 +146,106 @@ public final class Icones {
                 g.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                 for (int y : new int[]{15, 20, 25}) g.draw(new Line2D.Double(11, y, 21, y));
             }
+            case "novo" -> {
+                g.setColor(VERDE);
+                g.fill(new Ellipse2D.Double(2, 2, 28, 28));
+                g.setColor(Color.WHITE);
+                g.setStroke(new BasicStroke(3.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g.draw(new Line2D.Double(16, 9, 16, 23));
+                g.draw(new Line2D.Double(9, 16, 23, 16));
+            }
+            case "editar" -> {
+                g.setColor(LARANJA);
+                g.fill(poli(true, 8, 21, 21, 8, 26, 13, 13, 26));
+                g.setColor(new Color(0x5D4037));
+                g.fill(poli(true, 8, 21, 13, 26, 4, 29));
+                g.setColor(new Color(0xBDBDBD));
+                g.fill(poli(true, 21, 8, 24, 5, 27, 8, 26, 13));
+            }
+            case "salvar" -> {
+                g.setColor(AZUL);
+                g.fill(new RoundRectangle2D.Double(3, 3, 26, 26, 5, 5));
+                g.setColor(Color.WHITE);
+                g.fill(new Rectangle2D.Double(9, 3, 14, 9));
+                g.fill(new RoundRectangle2D.Double(8, 17, 16, 12, 2, 2));
+                g.setColor(CINZA);
+                g.fill(new Rectangle2D.Double(18, 5, 3, 5));
+            }
+            case "imprimir" -> {
+                g.setColor(Color.WHITE);
+                g.fill(new Rectangle2D.Double(9, 3, 14, 10));
+                g.setColor(CINZA);
+                g.draw(new Rectangle2D.Double(9, 3, 14, 10));
+                g.fill(new RoundRectangle2D.Double(3, 12, 26, 12, 4, 4));
+                g.setColor(Color.WHITE);
+                g.fill(new Rectangle2D.Double(9, 19, 14, 10));
+                g.setColor(CINZA);
+                g.draw(new Rectangle2D.Double(9, 19, 14, 10));
+                g.setColor(VERDE);
+                g.fill(new Ellipse2D.Double(22, 15, 3, 3));
+            }
+            case "exportar" -> {
+                g.setColor(AZUL);
+                g.draw(poli(false, 5, 17, 5, 27, 27, 27, 27, 17));
+                g.draw(new Line2D.Double(16, 22, 16, 5));
+                g.fill(poli(true, 9, 12, 16, 4, 23, 12));
+            }
+            case "filtrar" -> {
+                g.setColor(AZUL);
+                g.fill(poli(true, 3, 5, 29, 5, 19, 17, 19, 28, 13, 25, 13, 17));
+            }
+            case "ver" -> {
+                g.setColor(CINZA);
+                g.draw(new Ellipse2D.Double(2, 8, 28, 16));
+                g.setColor(AZUL);
+                g.fill(new Ellipse2D.Double(11, 11, 10, 10));
+            }
+            case "entrada" -> {
+                g.setColor(VERDE);
+                g.draw(poli(false, 5, 18, 5, 27, 27, 27, 27, 18));
+                g.draw(new Line2D.Double(16, 4, 16, 19));
+                g.fill(poli(true, 9, 13, 16, 21, 23, 13));
+            }
+            case "saida" -> {
+                g.setColor(VERMELHO);
+                g.draw(poli(false, 5, 17, 5, 27, 27, 27, 27, 17));
+                g.draw(new Line2D.Double(16, 22, 16, 6));
+                g.fill(poli(true, 9, 12, 16, 4, 23, 12));
+            }
+            case "ajuste" -> {
+                g.setColor(CINZA);
+                for (int y : new int[]{8, 16, 24}) g.draw(new Line2D.Double(4, y, 28, y));
+                g.setColor(AZUL);
+                g.fill(new Ellipse2D.Double(6, 4.5, 7, 7));
+                g.fill(new Ellipse2D.Double(19, 12.5, 7, 7));
+                g.fill(new Ellipse2D.Double(10, 20.5, 7, 7));
+            }
+            case "cadeado" -> {
+                g.setColor(LARANJA);
+                g.draw(new Arc2D.Double(10, 3, 12, 14, 0, 180, Arc2D.OPEN));
+                g.draw(new Line2D.Double(10, 10, 10, 15));
+                g.draw(new Line2D.Double(22, 10, 22, 15));
+                g.fill(new RoundRectangle2D.Double(5, 14, 22, 15, 4, 4));
+                g.setColor(Color.WHITE);
+                g.fill(new Ellipse2D.Double(14, 19, 4, 4));
+            }
+            case "abrir" -> {
+                g.setColor(VERDE);
+                g.draw(new Arc2D.Double(14, 1, 12, 14, 0, 180, Arc2D.OPEN));
+                g.draw(new Line2D.Double(26, 8, 26, 14));
+                g.fill(new RoundRectangle2D.Double(5, 14, 22, 15, 4, 4));
+                g.setColor(Color.WHITE);
+                g.fill(new Ellipse2D.Double(14, 19, 4, 4));
+            }
+            case "pagar" -> {
+                g.setColor(new Color(0xF9A825));
+                g.fill(new Ellipse2D.Double(2, 2, 28, 28));
+                g.setColor(new Color(0xE65100));
+                g.draw(new Ellipse2D.Double(4.5, 4.5, 23, 23));
+                g.setColor(new Color(0x5D4037));
+                g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 17));
+                g.drawString("$", 11, 22);
+            }
             default -> {
                 g.setColor(CINZA);
                 g.draw(new Ellipse2D.Double(3, 3, 26, 26));

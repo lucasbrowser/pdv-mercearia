@@ -8,7 +8,7 @@ import java.awt.*;
  * Controla o "jogo de botões" das telas de cadastro e evita perda acidental de dados.
  *
  * <pre>
- * Modo         Campos      Tabela/busca   Novo   Editar              Salvar   Descartar
+ * Modo         Campos      Tabela/busca   Novo   Editar              Salvar   Cancelar
  * CONSULTA     bloqueados  livres         sim    se há seleção       não      não
  * NOVO         liberados   bloqueadas     não    não                 sim      sim
  * EDICAO       liberados   bloqueadas     não    não                 sim      sim
@@ -19,11 +19,11 @@ import java.awt.*;
 public class ModoCadastro {
     public enum Modo { CONSULTA, NOVO, EDICAO }
 
-    private final JButton novo, editar, salvar, descartar;
+    private final JButton novo, editar, salvar, cancelar;
     private final JComponent[] campos, somenteNovo, navegacao;
     private final JLabel rotulo = new JLabel(" ");
     private Runnable aoMudar = () -> { };
-    private String dicaEdicao = "Editando o registro. Clique em Salvar para gravar ou em Descartar para desfazer.";
+    private String dicaEdicao = "Editando o registro. Clique em Salvar para gravar ou em Cancelar para desfazer.";
     private Modo modo = Modo.CONSULTA;
     private boolean temSelecao, sujo, carregando;
 
@@ -32,12 +32,12 @@ public class ModoCadastro {
      * @param somenteNovo liberados apenas em NOVO (ex.: estoque inicial)
      * @param navegacao   bloqueados enquanto edita (tabela, busca)
      */
-    public ModoCadastro(JButton novo, JButton editar, JButton salvar, JButton descartar,
+    public ModoCadastro(JButton novo, JButton editar, JButton salvar, JButton cancelar,
                         JComponent[] campos, JComponent[] somenteNovo, JComponent[] navegacao) {
         this.novo = novo;
         this.editar = editar;
         this.salvar = salvar;
-        this.descartar = descartar;
+        this.cancelar = cancelar;
         this.campos = campos;
         this.somenteNovo = somenteNovo;
         this.navegacao = navegacao;
@@ -77,6 +77,26 @@ public class ModoCadastro {
         return !editando() || !sujo || Ui.confirmar(pai, "Há dados digitados que ainda não foram salvos.\nDeseja descartá-los?");
     }
 
+    /**
+     * Instala o comportamento da janela: Ctrl+N / Ctrl+E / Ctrl+S acionam Novo / Editar / Salvar (além do Alt+letra
+     * dos botões); Esc cancela a edição ou, em consulta, fecha a tela; o X da janela pede confirmação se há dados não salvos.
+     * (Ctrl+C é reservado para copiar, por isso Cancelar usa Alt+C e Esc.)
+     */
+    public void instalar(JDialog d) {
+        d.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        d.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowClosing(java.awt.event.WindowEvent e) { if (podeSair(d)) d.dispose(); }
+        });
+        Ui.atalho(d.getRootPane(), "ctrl N", novo::doClick);
+        Ui.atalho(d.getRootPane(), "ctrl E", editar::doClick);
+        Ui.atalho(d.getRootPane(), "ctrl S", salvar::doClick);
+        Ui.atalho(d.getRootPane(), "ESCAPE", () -> { if (editando()) cancelar.doClick(); else d.dispose(); });
+        novo.setToolTipText("Novo cadastro  (Alt+N ou Ctrl+N)");
+        editar.setToolTipText("Editar o registro selecionado  (Alt+E ou Ctrl+E)");
+        salvar.setToolTipText("Salvar  (Alt+S ou Ctrl+S)");
+        cancelar.setToolTipText("Cancelar a edição e desfazer as alterações  (Alt+C ou Esc)");
+    }
+
     private void alterou() { if (!carregando && editando()) sujo = true; }
 
     private void aplicar() {
@@ -87,7 +107,7 @@ public class ModoCadastro {
         novo.setEnabled(!ed);
         editar.setEnabled(modo == Modo.CONSULTA && temSelecao);
         salvar.setEnabled(ed);
-        descartar.setEnabled(ed);
+        cancelar.setEnabled(ed);
         switch (modo) {
             case CONSULTA -> {
                 rotulo.setText(temSelecao ? "Consulta: clique em Editar para alterar ou em Novo para cadastrar."

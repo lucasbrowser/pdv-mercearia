@@ -24,11 +24,11 @@ public class ProdutoView extends JDialog {
         super(pai, "Cadastro de Produtos", ModalityType.APPLICATION_MODAL);
         ProdutoTableModel.aplicarCores(tabela, modelo);
 
-        JButton bNovo = Ui.botao("Novo", this::novo);
-        JButton bEditar = Ui.botao("Editar", this::editar);
-        JButton bSalvar = Ui.botao("Salvar", this::salvar);
-        JButton bDescartar = Ui.botao("Descartar", this::descartar);
-        modo = new ModoCadastro(bNovo, bEditar, bSalvar, bDescartar,
+        JButton bNovo = Ui.botao("Novo", "novo", 'N', this::novo);
+        JButton bEditar = Ui.botao("Editar", "editar", 'E', this::editar);
+        JButton bSalvar = Ui.botao("Salvar", "salvar", 'S', this::salvar);
+        JButton bCancelar = Ui.botao("Cancelar", "cancelar", 'C', this::descartar);
+        modo = new ModoCadastro(bNovo, bEditar, bSalvar, bCancelar,
                 new JComponent[]{codigo, descricao, unidade, preco, minimo, ativo},
                 new JComponent[]{estoque},                       // estoque inicial só no cadastro novo
                 new JComponent[]{tabela, busca});
@@ -54,19 +54,23 @@ public class ProdutoView extends JDialog {
         Ui.linha(form, 5, "Estoque mínimo:", minimo);
         Ui.linha(form, 6, "", ativo);
 
-        JPanel botoes = new JPanel();
+        JPanel botoes = new JPanel(new GridLayout(1, 4, 8, 0));
+        botoes.setBorder(BorderFactory.createEmptyBorder(8, 6, 6, 6));
         botoes.add(bNovo);
         botoes.add(bEditar);
         botoes.add(bSalvar);
-        botoes.add(bDescartar);
-        botoes.add(Ui.cancelar(this, () -> modo.podeSair(this)));
+        botoes.add(bCancelar);
+        Ui.igualar(botoes);
+        modo.instalar(this);
 
         JPanel direita = new JPanel(new BorderLayout());
-        direita.setPreferredSize(new Dimension(430, 0));
+        direita.setPreferredSize(new Dimension(540, 0));
         direita.add(modo.getRotulo(), BorderLayout.NORTH);
         JPanel centro = new JPanel(new BorderLayout());
         centro.add(form, BorderLayout.NORTH);
-        centro.add(botoes, BorderLayout.CENTER);
+        JPanel abaixo = new JPanel(new BorderLayout());
+        abaixo.add(botoes, BorderLayout.NORTH);
+        centro.add(abaixo, BorderLayout.CENTER);
         direita.add(centro, BorderLayout.CENTER);
 
         tabela.getSelectionModel().addListSelectionListener(e -> {

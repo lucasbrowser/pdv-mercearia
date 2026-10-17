@@ -49,8 +49,9 @@ public class PesquisaProdutoDialog extends JDialog {
         JPanel rodape = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         rodape.add(new JLabel("Quantidade / peso:"));
         rodape.add(qtd);
-        rodape.add(Ui.botao("Adicionar (Enter)", this::confirmar));
-        rodape.add(Ui.botao("Cancelar (Esc)", this::dispose));
+        rodape.add(Ui.botao("Adicionar (Enter)", "novo", 'A', this::confirmar));
+        rodape.add(Ui.botao("Cancelar (Esc)", "cancelar", 'C', this::dispose));
+        Ui.igualar(rodape);
 
         JPanel raiz = new JPanel(new BorderLayout(8, 8));
         raiz.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

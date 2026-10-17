@@ -38,6 +38,33 @@ public final class Ui {
         return b;
     }
 
+    /** Botão com ícone e tecla de atalho Alt+letra (mnemônico). */
+    public static JButton botao(String texto, String icone, char mnemonico, Runnable acao) {
+        JButton b = botao(texto, acao);
+        if (icone != null) {
+            b.setIcon(Icones.get(icone, 20));
+            b.setIconTextGap(8);
+        }
+        if (mnemonico != 0) {
+            b.setMnemonic(mnemonico);
+            b.setToolTipText(texto + "  (Alt+" + Character.toUpperCase(mnemonico) + ")");
+        }
+        return b;
+    }
+
+    /** Deixa todos os botões diretos do painel com o mesmo tamanho (o maior entre eles). */
+    public static void igualar(Container painel) {
+        int w = 0, h = 0;
+        for (Component c : painel.getComponents())
+            if (c instanceof JButton) {
+                Dimension d = c.getPreferredSize();
+                w = Math.max(w, d.width);
+                h = Math.max(h, d.height);
+            }
+        for (Component c : painel.getComponents())
+            if (c instanceof JButton) c.setPreferredSize(new Dimension(w, h));
+    }
+
     public static void atalho(JComponent c, String tecla, Runnable acao) {
         String nome = "atalho-" + tecla;
         c.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(tecla), nome);
@@ -57,8 +84,10 @@ public final class Ui {
     /** Igual a {@link #cancelar(JDialog)}, mas só fecha se {@code podeFechar} permitir (ex.: confirmar perda de dados). */
     public static JButton cancelar(JDialog d, java.util.function.BooleanSupplier podeFechar) {
         Runnable fechar = () -> { if (podeFechar.getAsBoolean()) d.dispose(); };
-        JButton b = new JButton("Cancelar", Icones.get("cancelar", 16));
-        b.setToolTipText("Fecha esta tela e retorna à tela anterior (Esc)");
+        JButton b = new JButton("Cancelar", Icones.get("cancelar", 20));
+        b.setIconTextGap(8);
+        b.setMnemonic('C');
+        b.setToolTipText("Fecha esta tela e retorna à tela anterior (Esc / Alt+C)");
         b.addActionListener(e -> fechar.run());
         atalho(d.getRootPane(), "ESCAPE", fechar);
         d.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); // o X da janela também passa pela confirmação

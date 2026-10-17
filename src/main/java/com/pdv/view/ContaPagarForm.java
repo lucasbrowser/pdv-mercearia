@@ -62,8 +62,9 @@ public class ContaPagarForm extends JDialog {
         Ui.linha(form, 7, "Observação:", obs);
 
         JPanel botoes = new JPanel();
-        botoes.add(Ui.botao("Salvar", this::salvar));
-        botoes.add(Ui.botao("Cancelar", this::dispose));
+        botoes.add(Ui.botao("Salvar", "salvar", 'S', this::salvar));
+        botoes.add(Ui.botao("Cancelar", "cancelar", 'C', this::dispose));
+        Ui.igualar(botoes);
 
         add(form, BorderLayout.CENTER);
         add(botoes, BorderLayout.SOUTH);

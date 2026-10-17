@@ -36,10 +36,11 @@ public class PagamentoDialog extends JDialog {
         Ui.linha(form, 1, "Recebido (R$):", recebido);
         Ui.linha(form, 2, "Troco:", troco);
 
-        JButton ok = Ui.botao("Confirmar (Enter)", this::confirmar);
+        JButton ok = Ui.botao("Confirmar (Enter)", "finalizar", 'F', this::confirmar);
         JPanel botoes = new JPanel();
         botoes.add(ok);
-        botoes.add(Ui.botao("Cancelar (Esc)", this::dispose));
+        botoes.add(Ui.botao("Cancelar (Esc)", "cancelar", 'C', this::dispose));
+        Ui.igualar(botoes);
 
         forma.addActionListener(e -> atualizar());
         Ui.aoDigitar(recebido, this::atualizar);

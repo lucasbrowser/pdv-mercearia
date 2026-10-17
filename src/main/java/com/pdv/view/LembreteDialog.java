@@ -44,8 +44,9 @@ public class LembreteDialog extends JDialog {
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         botoes.setOpaque(false);
-        botoes.add(Ui.botao("Abrir contas a pagar", () -> { dispose(); abrirContas.run(); }));
-        botoes.add(Ui.botao("Cancelar", this::dispose));
+        botoes.add(Ui.botao("Abrir contas a pagar", "contas", 'A', () -> { dispose(); abrirContas.run(); }));
+        botoes.add(Ui.botao("Cancelar", "cancelar", 'C', this::dispose));
+        Ui.igualar(botoes);
 
         JPanel cabecalho = new JPanel(new GridLayout(0, 1));
         cabecalho.setOpaque(false);

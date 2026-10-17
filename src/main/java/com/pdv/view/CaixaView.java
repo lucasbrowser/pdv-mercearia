@@ -28,13 +28,14 @@ public class CaixaView extends JDialog {
         resumo.setEditable(false);
 
         JPanel botoes = new JPanel();
-        botoes.add(Ui.botao("Abrir caixa", () -> { abrirCaixa(this); atualizar(); }));
-        botoes.add(Ui.botao("Sangria", () -> { movimento(this, TipoMovCaixa.SANGRIA); atualizar(); }));
-        botoes.add(Ui.botao("Suprimento", () -> { movimento(this, TipoMovCaixa.SUPRIMENTO); atualizar(); }));
-        botoes.add(Ui.botao("Fechar caixa", () -> { fecharCaixa(this); atualizar(); }));
-        botoes.add(Ui.botao("Imprimir resumo", () -> ImpressoraCupom.imprimirTexto(ImpressoraCupom.montarTextoCaixa(ctrl.resumoAberto()))));
+        botoes.add(Ui.botao("Abrir caixa", "abrir", 'A', () -> { abrirCaixa(this); atualizar(); }));
+        botoes.add(Ui.botao("Sangria", "sangria", 'S', () -> { movimento(this, TipoMovCaixa.SANGRIA); atualizar(); }));
+        botoes.add(Ui.botao("Suprimento", "entrada", 'U', () -> { movimento(this, TipoMovCaixa.SUPRIMENTO); atualizar(); }));
+        botoes.add(Ui.botao("Fechar caixa", "cadeado", 'F', () -> { fecharCaixa(this); atualizar(); }));
+        botoes.add(Ui.botao("Imprimir resumo", "imprimir", 'I', () -> ImpressoraCupom.imprimirTexto(ImpressoraCupom.montarTextoCaixa(ctrl.resumoAberto()))));
 
         botoes.add(Ui.cancelar(this));
+        Ui.igualar(botoes);
 
         add(status, BorderLayout.NORTH);
         add(new JScrollPane(resumo), BorderLayout.CENTER);

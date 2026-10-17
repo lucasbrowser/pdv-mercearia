@@ -37,11 +37,12 @@ public class EstoqueView extends JDialog {
         baixo.addActionListener(e -> carregar());
 
         JPanel botoes = new JPanel();
-        botoes.add(Ui.botao("Entrada (+)", () -> movimentar(TipoMovimento.ENTRADA)));
-        botoes.add(Ui.botao("Saída / Perda (-)", () -> movimentar(TipoMovimento.SAIDA)));
-        botoes.add(Ui.botao("Ajuste (contagem)", () -> movimentar(TipoMovimento.AJUSTE)));
+        botoes.add(Ui.botao("Entrada (+)", "entrada", 'E', () -> movimentar(TipoMovimento.ENTRADA)));
+        botoes.add(Ui.botao("Saída / Perda (-)", "saida", 'S', () -> movimentar(TipoMovimento.SAIDA)));
+        botoes.add(Ui.botao("Ajuste (contagem)", "ajuste", 'A', () -> movimentar(TipoMovimento.AJUSTE)));
 
         botoes.add(Ui.cancelar(this));
+        Ui.igualar(botoes);
 
         JPanel posicao = new JPanel(new BorderLayout());
         posicao.add(topo, BorderLayout.NORTH);
